@@ -10,21 +10,20 @@ public class UIManager : MonoBehaviour
     public GameObject startScreen;
     public Image gameImage;
     public Sprite gameImageSprite;
-
-    public GameObject previousScreen;
-
-    public GameObject optionScreen;
+     public GameObject previousScreen;
+     public GameObject optionScreen;
     public GameObject pauseScreen;
     public GameObject endScreen;
     public GameObject controlScreen;
     public GameObject instructionScreen;
     public GameObject keyBindDialogBox;
-
-    public Text nullifyText;
+    public Text jumpText;
     public Text attackAheadText;
     public Text team1Text;
     public Text team2Text;
     public Text timerText;
+    public Text skillCDButtonText;
+    public Text moveCountText;
     private int team1Points;
     private int team2Points;
     public bool inGame = false;
@@ -41,12 +40,35 @@ public class UIManager : MonoBehaviour
     public float timer = 99;
     private string startString;
     public bool paused = false;
+    public bool skillCD;
+    public GameObject mobileControls;
     //create UI and input for # of tiles/powerups/obstacles/instatiles in starting menu
-
-    // Start is called before the first frame update
+     // Start is called before the first frame update
     void Start()
     {
-        Time.timeScale = 0;
+        skillCD = Player.play.GetSkillCooldown();
+        if (skillCD)
+        {
+            skillCDButtonText.text = "Skill CD is on";
+            foreach (Player go in players)
+            {
+                go.SetSkillCooldown(skillCD);
+            }
+         }
+        if (!skillCD)
+        {
+            skillCDButtonText.text = "Skill CD is off";
+            foreach (Player go in players)
+            {
+                go.SetSkillCooldown(skillCD);
+            }
+        }
+        mobileControls = GameObject.Find("Mobile Controls");
+        mobileControls.SetActive(false);
+#if UNITY_ANDROID || UNITY_IOS
+        mobileControls.SetActive(true);
+#endif
+         Time.timeScale = 0;
         if (um == null)
         {
             um = this;
@@ -55,8 +77,7 @@ public class UIManager : MonoBehaviour
         FindAndDisable();
         players.Add(GameObject.Find("Player1").GetComponent<Player>());
         players.Add(GameObject.Find("Player2").GetComponent<Player>());
-
-    }
+     }
     // Update is called once per frame
     void Update()
     {
@@ -72,23 +93,30 @@ public class UIManager : MonoBehaviour
                     endScreen.SetActive(true);
                     Time.timeScale = 0;
                 }
-                if (Input.GetKeyDown(KeyCode.Escape))
-                {
-                    paused = true;
-                    pauseScreen.SetActive(paused);
-                    Time.timeScale = 0;
-                    return;
-                }
             }
-            if (Input.GetKeyDown(KeyCode.Escape) && paused)
+            if (Input.GetKeyDown(KeyCode.Escape))
             {
-                paused = false;
-                pauseScreen.SetActive(paused);
-                Time.timeScale = 1;
-                return;
+                Pause();
             }
         }
     }
+    public void Pause() 
+    {
+        if (paused)
+        {
+            paused = false;
+            pauseScreen.SetActive(paused);
+            Time.timeScale = 1;
+            return;
+        }
+        if (!paused)
+        {
+            paused = true;
+            pauseScreen.SetActive(paused);
+            Time.timeScale = 0;
+            return;
+        }
+     }
     private void FixedUpdate()
     {
         timerText.text = Mathf.RoundToInt(timer).ToString();
@@ -128,12 +156,10 @@ public class UIManager : MonoBehaviour
         switch (s)
         {
             case "Singleplayer":
-
-                StartGame(s);
+                 StartGame(s);
                 break;
             case "Multiplayer":
-
-                StartGame(s);
+                 StartGame(s);
                 break;
             case "Instructions":
                 previousScreen = EventSystem.current.currentSelectedGameObject.transform.parent.gameObject;
@@ -147,27 +173,22 @@ public class UIManager : MonoBehaviour
         optionScreen.transform.GetChild(1).gameObject.SetActive(false);
 #endif
                 break;
-
-            case "Pause Screen":
+             case "Pause Screen":
                 previousScreen = EventSystem.current.currentSelectedGameObject.transform.parent.gameObject;
                 previousScreen.SetActive(false);
                 pauseScreen.SetActive(true);
                 break;
-
-            case "End Screen":
+             case "End Screen":
                 previousScreen = EventSystem.current.currentSelectedGameObject.transform.parent.gameObject;
                 previousScreen.SetActive(false);
                 endScreen.SetActive(true);
                 break;
-
-            case "Controls":
+             case "Controls":
                 previousScreen = EventSystem.current.currentSelectedGameObject.transform.parent.gameObject;
                 previousScreen.SetActive(false);
                 controlScreen.SetActive(true);
                 break;
-
-
-        }
+         }
     }
     public void Resume()
     {
@@ -175,8 +196,7 @@ public class UIManager : MonoBehaviour
         pauseScreen.SetActive(paused);
         Time.timeScale = 1;
         return;
-
-    }
+     }
     public void Restart()
     {
         StartGame(startString);
@@ -188,8 +208,7 @@ public class UIManager : MonoBehaviour
             GameManager.gm.SinglePlayerMode();
             players[0].CanMoveHim();
             players[1].gameObject.SetActive(false);
-           
-        }
+         }
         if (s == "Multiplayer")
         {
             foreach (Player go in players)
@@ -198,10 +217,13 @@ public class UIManager : MonoBehaviour
             }
             GameManager.gm.SendInfo();
         }
+        paused = false;
         inGame = true;
         Time.timeScale = 1;
+        timer = 99;
         EventSystem.current.currentSelectedGameObject.transform.parent.gameObject.SetActive(false);
         startString = s;
+        Resetpoints();
     }
     public void Exit()
     {
@@ -235,30 +257,22 @@ public class UIManager : MonoBehaviour
         controlScreen.SetActive(false);
         instructionScreen.SetActive(false);
     }
-    public void UpdateNullify(int i)
+    public void NextLevel() 
     {
-        nullifyText.text = "Nullify:   " + i.ToString();
+        GameManager.gm.SetAbilities();
+        StartGame(startString);
+
+    }
+    public void UpdateJump(int i)
+    {
+        Debug.Log("I've been here");
+        jumpText.text = "Jump :   " + i.ToString();
     }
     public void UpdateAttackAhead(int i)
     {
         attackAheadText.text = "Attack Ahead:   " + i.ToString();
     }
-    public void UpdateSkills(string s, int i)
-    {
-        switch (s)
-        {
-            case "Nullify":
-                nullifyText.text = "Nullify:   " + i.ToString();
-                break;
-            case "AttackAhead":
-                attackAheadText.text = "Attack Ahead:   " + i.ToString();
-                break;
-            case "Jump":
-                break;
-            case "Wind":
-                break;
-        }
-    }
+    public void ReduceNullify() { }
     public void AddTeam1Points()
     {
         if (canAddPoints)
@@ -271,9 +285,21 @@ public class UIManager : MonoBehaviour
     }
     public void AddTeam2Points()
     {
-        team2Points += 100;
+        if (canAddPoints)
+        {
+            team2Points += 100;
+            canAddPoints = false;
+            team2Text.text = "Team 2 Points :    " + team2Points.ToString();
+            Invoke("EnableAddPoints", 3);
+        }
+    }
+    void Resetpoints() 
+    
+    {
+        team1Points = 0;
+        team2Points = 0;
+        team1Text.text = "Team 1 Points :    " + team1Points.ToString();
         team2Text.text = "Team 2 Points :    " + team2Points.ToString();
-        Invoke("EnableAddPoints", 3);
     }
     void EnableAddPoints()
     {
@@ -288,13 +314,35 @@ public class UIManager : MonoBehaviour
                 endScreen.transform.GetChild(0).GetComponent<Text>().text = "You Win";
                 Time.timeScale = 0;
                 break;
-
-            case "Lose":
+             case "Lose":
                 endScreen.SetActive(true);
                 endScreen.transform.GetChild(0).GetComponent<Text>().text = "You Lose";
                 Time.timeScale = 0;
                 break;
         }
-
+     }
+    public void SetSKillCooldown() 
+    {
+        skillCD = !skillCD;
+        if (skillCD) 
+        {
+            skillCDButtonText.text = "Skill CD is on";
+            foreach(Player go in players) 
+            {
+                go.SetSkillCooldown(skillCD);
+            }
+         }
+        if(!skillCD)
+        {
+            skillCDButtonText.text = "Skill CD is off";
+            foreach (Player go in players)
+            {
+                go.SetSkillCooldown(skillCD);
+            }
+        }
+    }
+    public void UpdateMoveCount(int i) 
+    {
+        moveCountText.text = "Move Count : " + i;
     }
 }

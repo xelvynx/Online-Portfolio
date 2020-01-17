@@ -29,7 +29,6 @@ public class KeyBindDialogBox : MonoBehaviour
             buttonToLabel[bn] = keyNameText;
             Button keyBindButton = go.transform.Find("Button").GetComponent<Button>();
             keyBindButton.onClick.AddListener(() => { StartRebindFor(bn); });
-
         }
     }
     public void Test(int i) { }

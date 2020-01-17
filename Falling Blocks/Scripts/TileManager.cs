@@ -28,70 +28,67 @@ public class TileManager : MonoBehaviour
     public static TileManager tm;
     public int moveCount;
     public int lavaTiles;
-    public int obstacleCount;
-    public int tileListCount;
-    //To remove excess lines type ^(\s)*$\n in find
+
+
+     //To remove excess lines type ^(\s)*$\n in find
     private void Start()
     {
         if (tm == null) { tm = this; }
-
-    }
+     }
     private void FixedUpdate()
     {
         if (UIManager.um.inGame)
         {
-            if (moveCount <=1)
-            {
+            //if (moveCount <=1)
+            //{
                 CheckTileList();
-            }
+            //
         }
     }
     public void CheckTileList() // Win Condition for singleplayer
     {
         foreach (GameObject go in tileList)
         {
-            if (go.GetComponent<Tile>().hasBeenStepped)
-            {
-                lavaTiles++;
-            }
+           
+                if (go.GetComponent<Tile>().GetStepped() == true)
+                {
+                    lavaTiles++;
+                }
+            
         }
 
-        if (lavaTiles >= tileList.Count - 1)
+        else { lavaTiles = 0; }
+    }
+    public void WinCondition() 
+    
+    {
+        if (lavaTiles >= tileList.Count)
         {
             Debug.Log("youWin");
             UIManager.um.SetEndScreen("Win");
+            lavaTiles = 0;
+            return;
         }
-
-        if (lavaTiles < tileList.Count)
-        {
-            Debug.Log("youLose");
-            UIManager.um.SetEndScreen("Lose");
-        }
-        else {  }
+        // if (lavaTiles < tileList.Count)
+        //{
+        //    Debug.Log("youLose");
+        //    UIManager.um.SetEndScreen("Lose");
+        //    lavaTiles = 0;
+        //    return;
+        //}
     }
-    public void Setup(int tile, int obstacle, int powerup)
+    public void Setup(int tile, int obstacle, int powerup, int moveC)
     {
-     
         numberOfTiles = tile;
         numberOfObstacles = obstacle;
         numberOfPowerUps = powerup;
-        if (numberOfObstacles + numberOfPowerUps +numberOfInstaTiles >= numberOfTiles - 4)
-        {
-            int i = numberOfTiles - 4;
-            int j = i / 2;
-            numberOfObstacles = j;
-            
-            
-            //numberOfPowerUps = Mathf.RoundToInt(tempList.Count / 8);
-
-            //numberOfObstacles = Mathf.RoundToInt(i/2);
-            //j = numberOfObstacles;
-            //numberOfPowerUps = i - j;
-
-            //Debug.Log("Number of powerups = " + numberOfPowerUps);
-        }
-        moveCount = numberOfTiles - Mathf.Abs(numberOfObstacles - numberOfPowerUps);
+        moveCount = moveC;
         StartCoroutine("InstantiateTiles");
+    }
+    public void UpdateMoveCount() 
+    {
+        moveCount--;
+        UIManager.um.UpdateMoveCount(moveCount);
     }
     public IEnumerator InstantiateTiles()
     {
@@ -101,8 +98,7 @@ public class TileManager : MonoBehaviour
         {
             GameObject.Destroy(child.gameObject);
         }
-        
-        yield return new WaitForEndOfFrame();
+         yield return new WaitForEndOfFrame();
         player1.GetComponent<Player>().InitialMoveCount(moveCount);
         tileList = new List<GameObject>();
         tempList = new List<GameObject>();
@@ -126,11 +122,9 @@ public class TileManager : MonoBehaviour
         }
         StartCoroutine("Testing");
     }
-
-    IEnumerator Testing() // Step1 Checks position of tiles and decides possible starting positions.  Chooses corners.
+     IEnumerator Testing() // Step1 Checks position of tiles and decides possible starting positions.  Chooses corners.
     {
         yield return new WaitForEndOfFrame();
-        //Debug.Log("TileList0 is located at " + tileList[0].transform.position);
         one = tileList[0].transform.position.y;
         for (int i = 0; i < tileList.Count; i++)
         {
@@ -138,18 +132,14 @@ public class TileManager : MonoBehaviour
             two = tileList[i].transform.position.y;
             if (one != two)
             {
-                //Debug.Log("TileList0 is located at " + tileList[i-1].transform.position);
                 int sp2 = i - 1; //grabs index of the tile before the y position changes, also calculates the length of a row
                 int sp3 = tileList.Count - 1; //checks the length of the List and you subtract 1 to get the last object within the list
                 int sp4 = sp3 - sp2; // 
                                      //AddToStartingTiles(startingPos2, startingPos3, startingPos4);
                 yield return new WaitForEndOfFrame();
                 Vector3 a = tileList[0].transform.position;
-                // yield return new WaitForEndOfFrame();
                 Vector3 b = tileList[sp2].transform.position;
-                //yield return new WaitForEndOfFrame();
                 Vector3 c = tileList[sp3].transform.position;
-                //yield return new WaitForEndOfFrame();
                 Vector3 d = tileList[sp4].transform.position;
                 AddToList(a, b, c, d);
                 tileList[0].GetComponent<Tile>().StartCoroutine("StartingPositions");
@@ -162,9 +152,7 @@ public class TileManager : MonoBehaviour
             }
         }
     }
-  
-
-    void AddToList(Vector3 h, Vector3 i, Vector3 j, Vector3 k)
+     void AddToList(Vector3 h, Vector3 i, Vector3 j, Vector3 k)
     {
         startingPositions.Add(h);
         startingPositions.Add(i);
@@ -178,16 +166,13 @@ public class TileManager : MonoBehaviour
         tempList.Remove(tileList[i]);
         tempList.Remove(tileList[j]);
         tempList.Remove(tileList[k]);
-
-        for (int x = 0; x < tempList.Count; x++)
-
-        {
+         for (int x = 0; x < tempList.Count; x++)
+         {
             tempList[x].name = "Tile" + x;
         }
         StartThisNow();
         ////Debug.Log("TempList length is " + tempList.Count); //currently max count is 52  create better formula for counting obstacles and powerups and instatiles
-
-    }
+     }
     public void StartThisNow()
     {
         StartCoroutine("SetStartingPositions");
@@ -206,8 +191,7 @@ public class TileManager : MonoBehaviour
         player2.GetComponent<Player>().SetRespawnPoint(player2StartPos);
         player2.transform.position = player2StartPos;
         StartCoroutine("SpawnObstacles"); // by doing yield return, it will wait for the coroutine to finish before it starts
-
-    }
+     }
     IEnumerator SpawnObstacles() // Step3
     {
         for(int i = 0; i<numberOfObstacles; i++) 
@@ -220,18 +204,14 @@ public class TileManager : MonoBehaviour
                 {
                     goTile.SpawnObstacle();
                     tempList.Remove(tempGo);
+                    tileList.Remove(tempGo);
                     break;
                 }
             }
         }
-        foreach (GameObject go in tempList)
-        {
-            tileList.Remove(go);
-        }
-        tileListCount = tileList.Count;
-        yield return new WaitForEndOfFrame();
         
-        RandomInstaLavaTile();  // make it so you can spawn both obstacles and powerups on same platform
+        yield return new WaitForEndOfFrame();
+         RandomInstaLavaTile();  // make it so you can spawn both obstacles and powerups on same platform
         Debug.Log("IGOTHERE");
     }
     void RandomInstaLavaTile() // Step4 Setting up instant lava tiles
@@ -244,8 +224,7 @@ public class TileManager : MonoBehaviour
         }
         if (GameManager.gm.singlePlayer) { return; }
         SpawnPowerUp();
-
-        InvokeRepeating("SpawnPowerUp", 15, 15);
+         InvokeRepeating("SpawnPowerUp", 15, 15);
     }
     void SpawnPowerUp() // Step 5 SpawnPowerups 
     {
@@ -276,12 +255,10 @@ public class TileManager : MonoBehaviour
             foreach (Collider2D cd in hit)
             {
                 Tile t = cd.GetComponent<Tile>();
-                Debug.Log(t.GetNullify());
                 if (!t.GetObstacle() && !t.GetNullify() && !t.attackAhead)
                 {
                     t.StartLava();
-
-                }
+                 }
             }
         }
         if (i == 0)

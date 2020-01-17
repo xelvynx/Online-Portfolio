@@ -21,11 +21,9 @@ public class Tile : MonoBehaviour
     private bool canAddPoints = true;
     public bool hasPlayer = false;
     public float playerStayDuration = 3;
-    public float addDuration;
     public bool hasBeenStepped;
     public bool GetNullify() { return nullify; }
-
-    void OnEnable()
+     void OnEnable()
     {
         checker = 0;
         whatIsTile = LayerMask.GetMask("Tile");
@@ -34,8 +32,7 @@ public class Tile : MonoBehaviour
         lavaDuration = 2;
         playerStayDuration = 1;
     }
-
-    private void OnTriggerExit2D(Collider2D other)
+     private void OnTriggerExit2D(Collider2D other)
     {
         hasPlayer = false;
         if (!lavaAnimationPlaying && !isLava && !hasObstacle)
@@ -50,29 +47,27 @@ public class Tile : MonoBehaviour
             {
                 CancelInvoke();
                 StartLava();
-
-            }
+             }
         }
-        hasBeenStepped = true;
+        
     }
     public bool GetStepped()
     {
         return hasBeenStepped;
     }
     public bool GetObstacle() { return hasObstacle; } 
-   
-    public bool GetCanPlace() 
+     public bool GetCanPlace() 
     {
         return canPlace;
     }
     public bool GetPlayer() { return hasPlayer; }
+     public void SetStepped() { hasBeenStepped = true; }
     void EnableAddPoints() { canAddPoints = true; }
     void CanStart()
     {
         canRun = true;
     }
-
-    private void OnTriggerStay2D(Collider2D other)
+     private void OnTriggerStay2D(Collider2D other)
     {
         if (!UIManager.um.paused)
         {
@@ -84,8 +79,7 @@ public class Tile : MonoBehaviour
                     if (other.name == "Player2") UIManager.um.AddTeam1Points();
                     canAddPoints = false;
                 }
-                
-                Invoke("EnableAddPoints", lavaDuration);
+                 Invoke("EnableAddPoints", lavaDuration);
                 other.gameObject.GetComponent<Player>().Respawn();
             }
             if (other.tag == "Player"&&GameManager.gm.singlePlayer == false)
@@ -93,17 +87,19 @@ public class Tile : MonoBehaviour
                 hasPlayer = true;
                 Invoke("StartLava", 3);
             }
+            hasBeenStepped = true;
         }
     }
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
+            
             hasPlayer = true;
             if (nullify)
             {
                 //Debug.Log("added nullify");
-                other.GetComponent<Player>().AddNullify();
+                //other.GetComponent<Player>().AddNullify();
                 ResetPowerUp();
             }
             if (attackAhead)
@@ -117,14 +113,12 @@ public class Tile : MonoBehaviour
                 if (other.name == "Player1") UIManager.um.AddTeam2Points();
                 if (other.name == "Player2") UIManager.um.AddTeam1Points();
                 other.gameObject.GetComponent<Player>().Respawn();
-
-                //Debug.Log("Enter Death");
+                 //Debug.Log("Enter Death");
             }
+            hasBeenStepped = true;
         }
     }
-
-
-    public IEnumerator StartingPositions()
+     public IEnumerator StartingPositions()
     {
         yield return new WaitForEndOfFrame();
         Collider2D hit1 = Physics2D.OverlapCircle(transform.position + Vector3.left, .5f, whatIsTile);
@@ -175,8 +169,7 @@ public class Tile : MonoBehaviour
             }
         }
     }
-    
-    void ResetPowerUp()
+     void ResetPowerUp()
     {
         sr.color = Color.white;
         nullify = false;
@@ -217,8 +210,7 @@ public class Tile : MonoBehaviour
     {
         sr.color = Color.red;
         isLava = true;
- 
-    }
+     }
     void StopLavaTransition()
     {
         lavaAnimationPlaying = false;
@@ -227,9 +219,9 @@ public class Tile : MonoBehaviour
     {
         StopAllCoroutines();
         StopLavaTransition();
-        Invoke("CanStart", 3);
+        
         sr.color = previousColor;
         isLava = false;
+        Invoke("CanStart", 3);
     }
-   
-}
+ }

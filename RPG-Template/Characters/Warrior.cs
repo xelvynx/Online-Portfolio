@@ -4,32 +4,35 @@ using UnityEngine;
 
 public class Warrior : BaseCharacter
 {
+    public static Warrior player;
     public void Start()
     {
+        player = this;
         InitializeStats(100,3, 3, 3);
     }
     public void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))//ranged skill
+        if (InputManager.im.GetButtonDown("Slot1")) 
         {
-            AttackFunction(skillList[0]);
+            AttackFunction(sm.skillList[0]);
         }
+
         if (Input.GetKeyDown(KeyCode.Alpha2))//melee skill
         {
-            AttackFunction(skillList[1]);
+            AttackFunction(sm.skillList[1]);
         }
         if (Input.GetKeyDown(KeyCode.Space))//Reset Skill
         {
-            for(int i = 0; i < skillList.Count; i++)
+            for(int i = 0; i < sm.skillList.Count; i++)
             {
-                skillList[i].level = 1;
+                sm.skillList[i].level = 1;
             }
             Debug.Log("Skills have been reset.");
         }
         if (Input.GetKeyDown(KeyCode.X))//Upgrade skill
         {
-            skillList[1].level++;
-            Debug.Log(skillList[0].level);
+           sm. skillList[1].level++;
+            Debug.Log(sm.skillList[0].level);
         }
     }
 }

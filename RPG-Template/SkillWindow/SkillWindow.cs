@@ -17,14 +17,24 @@ public class SkillWindow : MonoBehaviour
             return _instance;
         }
     }
+    public BaseCharacter player;
+    public List<Skill> skillList = new List<Skill>();
     public Text skillPointText;
     public int skillPoints =1 ;
- 
+
+
+
+
     // Start is called before the first frame update
     void Start()
     {
+        
         skillPointText = GameObject.Find("SkillPointText").GetComponent<Text>();
-       
+        player = GameObject.Find("Player").GetComponent<BaseCharacter>();
+        foreach(Skill s in player.sm.skillList) 
+        {
+            skillList.Add(s);
+        }
     }
 
     // Update is called once per frame

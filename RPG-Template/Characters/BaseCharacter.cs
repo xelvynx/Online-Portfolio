@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class BaseCharacter : MonoBehaviour
 {
-    public List<Skill> skillList = new List<Skill>();
+    public static BaseCharacter player;
+    public SkillManager sm;
     public Skill skillUsed;
     public AttackInfo attackInfo;
     public AttackAttribute attackAttribute;
@@ -22,7 +23,12 @@ public class BaseCharacter : MonoBehaviour
     public LayerMask whatIsEnemy;
     public float radius;
 
-
+    public void Awake()
+    {
+        if(GetComponent<SkillManager>() != null)
+        sm = GetComponent<SkillManager>();
+        
+    }
     public void InitializeStats(int hp, int str, int dex, int vit)
     {
         healthPoints = hp;
